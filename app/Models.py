@@ -1,4 +1,4 @@
-from sqlalchemy import String,Integer,Column,DateTime
+from sqlalchemy import String,Integer,Column,DateTime,Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime 
  
@@ -9,5 +9,5 @@ class Post(Base):
   id = Column(Integer, primary_key=True,autoincrement=True,nullable=False)
   title = Column(String,nullable=False)
   content = Column(String,nullable=False)
-  published = Column(bool,nullable=False)
+  published = Column(Boolean,nullable=False)
   created_at = Column(DateTime, default = datetime.utcnow, nullable=False)
