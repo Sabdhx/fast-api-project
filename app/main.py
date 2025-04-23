@@ -17,7 +17,6 @@ from .Models import Post
 from .database import session_local
 from fastapi import Depends
 class creation_post(BaseModel):
-    id: int  # Add this type annotation
     title: str
     content: str
     published: bool
@@ -38,13 +37,49 @@ def post_creation(post: creation_post, db: Session = Depends(get_db)):
         published=post.published,
         created_at=post.created_at
     )
-
-    # Add the new post to the session and commit it to the database
     db.add(new_post)
     db.commit()
     db.refresh(new_post)  # Refresh the instance to get the updated values like ID
-
     return {"message": "New post created", "post_id": new_post.id}
+
+
+@app.get("/")
+def get_posts(db: Session = Depends(get_db)):
+    data = db.query(Post).all()
+    return data
+
+@app.get("/post/{id}")
+def single_post(id:int, db:Session = Depends(get_db)):
+    data = db.query(Post).filter(Post.id == id).first()
+    return data
+
+
+@app.delete("/delete/{id}")
+def deleteSingleId(id:int,db:Session = Depends(get_db)):
+    post = db.query(Post).filter(Post.id == id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    db.delete(post)
+    db.commit()
+    return {"message":"post deleted"}
+
+
+@app.put("/update/{id}")
+def updatePost(id:int,post:creation_post,db:Session=Depends(get_db)):
+    postToUpdate = db.query(Post).filter(Post.id == id).first()
+    if not postToUpdate:
+        raise HTTPException(status_code=404, detail="post not found")
+   
+    postToUpdate.title = post.title
+    postToUpdate.content = post.content
+    postToUpdate.published = post.published
+    postToUpdate.created_at = datetime.utcnow()
+    
+    
+    db.commit()
+    db.refresh(postToUpdate)
+    return {"message":"post updated","data":postToUpdate}
+
 
 # while True:
 #     try:
